@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>다이어리 에디터</title>
+  <title>다이어리 에디터 Pro</title>
   
   <!-- 웹 폰트 CDN -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang&family=IBM+Plex+Sans+KR:wght@400;600&family=Nanum+Gothic:wght@400;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang&family=IBM+Plex+Sans+KR:wght@400;600&family=Nanum+Gothic:wght@400;700&family=Noto+Serif+KR:wght@400;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 
-  <!-- HTML2Canvas (이미지 저장용 라이브러리) -->
+  <!-- HTML2Canvas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
@@ -20,6 +20,14 @@
     @font-face {
       font-family: 'KoPubWorldBatang';
       src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_night@1.0/KoPubWorldBatang Medium.woff') format('woff');
+    }
+    @font-face {
+      font-family: 'OwnglyphEuijin';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105@1.1/Ownglyph_euijin-Rg.woff') format('woff');
+    }
+    @font-face {
+      font-family: 'OwnglyphKongKong';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2405-2@1.0/Ownglyph_kongkong-Rg.woff2') format('woff2');
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,10 +43,10 @@
 
     .app-container {
       display: grid;
-      grid-template-columns: 320px 1fr 340px;
-      grid-template-rows: 220px 1fr;
+      grid-template-columns: 350px 1fr 340px;
+      grid-template-rows: 240px 1fr;
       gap: 16px;
-      max-width: 1400px;
+      max-width: 1480px;
       height: calc(100vh - 40px);
       margin: 0 auto;
       position: relative;
@@ -49,7 +57,7 @@
       border-radius: 12px;
       border: 1px solid #e5e7eb;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      padding: 20px;
+      padding: 16px;
       overflow-y: auto;
     }
 
@@ -59,33 +67,35 @@
       grid-row: 1 / 3;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .tool-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .tool-group label {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
       color: #6b7280;
     }
 
     .tool-row {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      align-items: center;
     }
 
-    input[type="text"], select {
+    input[type="text"], input[type="date"], select {
       width: 100%;
-      padding: 8px 10px;
+      padding: 6px 8px;
       border: 1px solid #d1d5db;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       outline: none;
+      font-family: inherit;
     }
 
     .format-btn-group {
@@ -100,92 +110,122 @@
       background: #fff;
       border: none;
       border-right: 1px solid #d1d5db;
-      padding: 8px 0;
+      padding: 6px 0;
       cursor: pointer;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.82rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: inherit;
+      color: #374151;
     }
 
     .format-btn:last-child { border-right: none; }
     .format-btn:hover { background: #f3f4f6; }
-    .format-btn svg { width: 16px; height: 16px; fill: #374151; }
+    .format-btn.active { background: var(--theme-color, #b9ca95); color: #fff; }
+    .format-btn svg { width: 15px; height: 15px; fill: currentColor; }
 
-    /* 카드 이미지 조절 섹션 */
-    .image-control-section {
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #1f2937;
       border-top: 1px solid #e5e7eb;
-      padding-top: 14px;
-      margin-top: 4px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      padding-top: 8px;
+      margin-top: 2px;
     }
 
-    .slider-item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .slider-item label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #4b5563;
-    }
-
-    .slider-item input[type="range"] {
-      width: 100%;
-      accent-color: #b9ca95;
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #e2e8f0;
+      height: 6px;
+      border-radius: 3px;
+      outline: none;
+      accent-color: var(--theme-color, #b9ca95);
       cursor: pointer;
     }
 
-    /* 스티커 섹션 스타일 */
-    .sticker-section {
-      border-top: 1px solid #e5e7eb;
-      padding-top: 14px;
-      margin-top: 4px;
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--theme-color, #b9ca95);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    .btn-sticker-add {
+    .val-input {
+      width: 55px !important;
+      text-align: center;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      padding: 4px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .btn-action {
       background: #ffffff;
       border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-weight: bold;
-      font-size: 0.85rem;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-weight: 600;
+      font-size: 0.78rem;
       cursor: pointer;
-      display: inline-block;
-      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
       transition: background 0.2s;
+      font-family: inherit;
+      color: #374151;
     }
 
-    .btn-sticker-add:hover {
-      background: #f8fafc;
+    .btn-action:hover { background: #f8fafc; }
+    .btn-action svg { width: 15px; height: 15px; fill: #4b5563; }
+
+    .element-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
     }
 
-    .sticker-desc {
-      font-size: 0.75rem;
-      color: #888;
-      line-height: 1.4;
-      margin-top: 8px;
-      margin-bottom: 12px;
+    .color-presets {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
     }
+
+    .color-preset-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #d1d5db;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .color-preset-circle:hover { transform: scale(1.15); }
 
     .sticker-control-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 8px;
+      gap: 8px;
+      margin-top: 6px;
     }
 
     .sticker-thumb-box {
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 4px;
+      border-radius: 6px;
+      padding: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -199,28 +239,17 @@
       object-fit: contain;
     }
 
-    .sticker-slider {
-      flex: 1;
-      accent-color: #b9ca95;
-      cursor: pointer;
-    }
-
-    .btn-sticker-delete {
+    .btn-delete-item {
       background: none;
       border: none;
-      color: #888;
-      font-size: 0.85rem;
+      color: #ef4444;
+      font-size: 0.78rem;
       cursor: pointer;
       text-decoration: underline;
       white-space: nowrap;
-      padding: 2px 4px;
     }
 
-    .btn-sticker-delete:hover {
-      color: #ef4444;
-    }
-
-    /* 3. 상단 우측: 미니 달력 영역 */
+    /* 3. 우측 상단: 미니 달력 영역 */
     .mini-calendar-panel {
       grid-column: 3 / 4;
       grid-row: 1 / 2;
@@ -231,14 +260,15 @@
     .mini-calendar-header {
       text-align: center;
       font-weight: bold;
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       margin-bottom: 8px;
       color: #1e293b;
     }
 
     .mini-calendar-table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0 3px;
       table-layout: fixed;
       font-size: 0.75rem;
       text-align: center;
@@ -247,25 +277,62 @@
     .mini-calendar-table th {
       font-weight: 600;
       color: #475569;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+      border: none;
     }
 
     .mini-calendar-table td {
-      height: 24px;
-      border: 1px solid #f1f5f9;
+      height: 28px;
+      border: none;
       color: #334155;
       vertical-align: middle;
+      position: relative;
+      cursor: pointer;
     }
 
-    .mini-calendar-table td.today {
-      border: 2px solid #b9ca95 !important;
+    .mini-calendar-table td:hover span {
+      background-color: #e2e8f0;
+    }
+
+    .mini-calendar-table td:first-child { color: #ef4444; }
+
+    .mini-calendar-table td span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .mini-calendar-table td.today span {
+      background-color: var(--theme-color, #b9ca95);
+      color: #ffffff !important;
       font-weight: bold;
-      color: #556b2f;
-      background-color: #f4f7ee;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
     }
 
-    /* 4. 하단: 하루치 일기 카드 배치 영역 */
+    .mini-calendar-table td.in-range {
+      background-color: var(--theme-light, #f4f7ee);
+    }
+
+    .mini-calendar-table td.range-start {
+      border-top-left-radius: 50px;
+      border-bottom-left-radius: 50px;
+    }
+
+    .mini-calendar-table td.range-end {
+      border-top-right-radius: 50px;
+      border-bottom-right-radius: 50px;
+    }
+
+    .mini-calendar-table td.range-start.range-end {
+      border-radius: 50px;
+    }
+
+    /* 4. 중앙: 일기 카드 배치 영역 */
     .main-diary-panel {
       grid-column: 2 / 3;
       grid-row: 1 / 3;
@@ -273,36 +340,7 @@
       flex-direction: column;
       position: relative;
       overflow: hidden;
-    }
-
-    .card-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid #e2e8f0;
-      flex-shrink: 0;
-    }
-
-    .card-top-bar label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .card-top-bar input[type="color"] {
-      -webkit-appearance: none;
-      border: 1px solid #cbd5e1;
-      width: 26px;
-      height: 26px;
-      border-radius: 6px;
-      cursor: pointer;
-      padding: 0;
-      background: none;
+      padding-top: 16px;
     }
 
     .daily-cards-wrapper {
@@ -315,17 +353,16 @@
 
     .daily-column {
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       display: flex;
       flex-direction: column;
       align-items: center;
       height: 100%;
     }
 
-    /* 저장용 카드 래퍼 */
     .card-export-wrapper {
       background-color: #b9ca95;
-      padding: 20px;
+      padding: 24px;
       border-radius: 12px;
       width: 100%;
       flex: 1;
@@ -338,14 +375,29 @@
       min-height: 0;
     }
 
-    /* 일기 카드 스타일 */
+    .card-export-wrapper::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-1deg);
+      width: 110px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.55);
+      border-left: 2px dashed rgba(0,0,0,0.1);
+      border-right: 2px dashed rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      z-index: 5;
+      pointer-events: none;
+    }
+
     .diary-card {
       background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
       width: 100%;
       height: 100%;
-      padding: 20px 18px 16px 18px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -353,12 +405,28 @@
       overflow: hidden;
     }
 
+    /* 낙서 캔버스 (최상단 z-index: 9999로 설정되어 사진, 폴라로이드, 스티커 위로 그려짐) */
+    .drawing-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .drawing-canvas.active {
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       flex-shrink: 0;
+      z-index: 2;
     }
 
     .card-label-sub {
@@ -371,47 +439,60 @@
       border: 1.5px solid #333333;
       border-radius: 50px;
       padding: 3px 14px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: bold;
       color: #111111;
       background: #ffffff;
+      text-align: center;
     }
 
-    /* 카드 내부 이미지 컨테이너 */
+    .card-image-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
     .card-image-box {
       width: 100%;
-      min-height: 160px;
-      max-height: 240px;
+      height: 170px;
       border: 1px dashed #cbd5e1;
       border-radius: 8px;
       background: #f8fafc;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 12px;
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      flex-shrink: 0;
     }
 
-    /* 이미지 미첨부 시 숨김 처리 */
-    .card-image-box.empty {
+    .card-img-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
       display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
 
     .card-image-box img {
-      width: 100%;
-      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
-      display: none;
       transform-origin: center center;
+      will-change: transform;
     }
 
     .card-image-placeholder {
       font-size: 0.8rem;
       color: #94a3b8;
-      padding: 12px 0;
+      padding: 10px 0;
+      z-index: 2;
     }
 
     .card-img-remove-btn {
@@ -429,33 +510,86 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 5;
+      z-index: 25;
+    }
+
+    .main-img-controls {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      margin-top: 6px;
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .daily-editor-area {
       flex: 1;
       outline: none;
       line-height: 1.8;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       overflow-y: auto;
       color: #333333;
       padding: 4px;
-      min-height: 60px;
+      min-height: 45px;
+      z-index: 2;
     }
 
-    /* [수정] 카드 하단 한마디 영역 (글자 잘림 수정) */
+    .todo-container {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+    }
+
+    .todo-item input[type="checkbox"] {
+      accent-color: var(--theme-color, #b9ca95);
+      cursor: pointer;
+      width: 15px;
+      height: 15px;
+    }
+
+    .todo-item span[contenteditable] {
+      outline: none;
+      flex: 1;
+      color: #374151;
+    }
+
+    .todo-item.checked span[contenteditable] {
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
     .card-footer {
       background: #f3f4f6;
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
       gap: 8px;
       font-size: 0.85rem;
       color: #666666;
-      margin-top: 8px;
+      margin-top: 6px;
       flex-shrink: 0;
-      min-height: 42px;
+      min-height: 38px;
+      z-index: 2;
     }
 
     .card-footer input {
@@ -488,6 +622,10 @@
       cursor: pointer;
       font-weight: 600;
       transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .btn-action-small:hover {
@@ -495,24 +633,37 @@
       border-color: #94a3b8;
     }
 
-    /* 자유 드래그 스티커 객체 */
-    .draggable-sticker {
+    .draggable-element {
       position: absolute;
       cursor: move;
       user-select: none;
-      z-index: 10;
+      z-index: 50;
       display: inline-block;
       padding: 2px;
     }
 
-    .draggable-sticker img {
+    .draggable-element img {
       width: 100%;
       height: 100%;
       pointer-events: none;
     }
 
-    .draggable-sticker.selected {
-      outline: 2px dashed #b9ca95;
+    .draggable-element.selected {
+      outline: 2px dashed var(--theme-color, #b9ca95);
+    }
+
+    .polaroid-frame {
+      background: #ffffff;
+      padding: 8px 8px 22px 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      border-radius: 2px;
+      text-align: center;
+    }
+
+    .polaroid-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
   </style>
 </head>
@@ -522,137 +673,199 @@
 
     <!-- 1. 좌측 편집도구 -->
     <div class="panel editor-tools" data-html2canvas-ignore="true">
-      <h3 style="font-size: 1rem; margin-bottom: 4px;">글 편집</h3>
+      <h3 style="font-size: 0.95rem; margin-bottom: 2px;">디자인</h3>
 
+      <!-- 1. 글꼴 -->
       <div class="tool-group">
-        <label>전체 지면 글꼴</label>
+        <label>글꼴</label>
         <select id="font-family" onchange="changeFont(this.value)">
           <option value="Pretendard">차분한 명조 (Pretendard)</option>
+          <option value="Nanum Pen Script">나눔손글씨 펜</option>
+          <option value="OwnglyphEuijin">온글잎 의진체 (손글씨)</option>
+          <option value="OwnglyphKongKong">온글잎 콩콩체 (귀여운 손글씨)</option>
+          <option value="Gowun Batang">고운바탕</option>
           <option value="Nanum Gothic">나눔고딕</option>
           <option value="IBM Plex Sans KR">IBM 플렉스</option>
-          <option value="Gowun Batang">고운바탕</option>
           <option value="Noto Serif KR">노토 세리프</option>
           <option value="KoPubWorldDotum">KoPub 돋움</option>
-          <option value="KoPubWorldBatang">KoPub 바탕</option>
         </select>
       </div>
 
       <div class="tool-group">
-        <label>본문 서식 (선택 영역)</label>
         <div class="tool-row">
-          <select id="font-size" onchange="changeFontSize(this.value)">
+          <select id="font-size" onchange="changeFontSize(this.value)" style="width: 90px;">
             <option value="14px">14px</option>
             <option value="16px" selected>16px</option>
             <option value="18px">18px</option>
             <option value="20px">20px</option>
-            <option value="24px">24px</option>
-            <option value="30px">30px</option>
           </select>
-        </div>
-        <div class="format-btn-group" style="margin-top: 6px;">
-          <button class="format-btn" onclick="execCmd('bold')">B</button>
-          <button class="format-btn" onclick="execCmd('italic')"><i>I</i></button>
-          <button class="format-btn" onclick="execCmd('underline')"><u>U</u></button>
-          <button class="format-btn" onclick="execCmd('strikeThrough')"><s>S</s></button>
-        </div>
-      </div>
-
-      <div class="tool-group">
-        <label>본문 정렬</label>
-        <div class="format-btn-group">
-          <button class="format-btn" onclick="execCmd('justifyLeft')" title="왼쪽 정렬">
-            <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm0 4h12v2H3V9zm0 4h18v2H3v-2zm0 4h12v2H3v-2z"/></svg>
-          </button>
-          <button class="format-btn" onclick="execCmd('justifyCenter')" title="가운데 정렬">
-            <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm3 4h12v2H6V9zm-3 4h18v2H3v-2zm3 4h12v2H6v-2z"/></svg>
-          </button>
-          <button class="format-btn" onclick="execCmd('justifyRight')" title="오른쪽 정렬">
-            <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm6 4h12v2H9V9zm-6 4h12v2H9v-2zm6 4h12v2H9v-2z"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="tool-group">
-        <label>줄 간격</label>
-        <select id="line-height" onchange="changeLineHeight(this.value)">
-          <option value="1.4">1.4</option>
-          <option value="1.6">1.6</option>
-          <option value="1.8" selected>1.8</option>
-          <option value="2.0">2.0</option>
-        </select>
-      </div>
-
-      <!-- 카드 이미지 조절 슬라이더 영역 -->
-      <div class="image-control-section">
-        <h4 style="font-size: 0.95rem; font-weight: bold;">카드 사진 위치/크기 조절</h4>
-        
-        <div class="slider-item">
-          <label>확대</label>
-          <input type="range" id="img-scale" min="1" max="3" step="0.05" value="1" oninput="updateImageTransform()">
-        </div>
-
-        <div class="slider-item">
-          <label>좌우 위치</label>
-          <input type="range" id="img-pos-x" min="-100" max="100" step="1" value="0" oninput="updateImageTransform()">
-        </div>
-
-        <div class="slider-item">
-          <label>위·아래 위치</label>
-          <input type="range" id="img-pos-y" min="-100" max="100" step="1" value="0" oninput="updateImageTransform()">
-        </div>
-      </div>
-
-      <!-- 스티커 섹션 -->
-      <div class="sticker-section">
-        <h4 style="font-size: 0.95rem; font-weight: bold; margin-bottom: 8px;">스티커</h4>
-        <label for="sticker-file-input" class="btn-sticker-add">스티커 추가</label>
-        <input type="file" id="sticker-file-input" accept="image/*" style="display:none;" onchange="handleStickerUpload(event)">
-        
-        <p class="sticker-desc">
-          투명 배경 PNG를 올려보세요. 일기 카드 위에서 드래그하여 위치를 자유롭게 옮기고 크기를 조절할 수 있습니다.
-        </p>
-
-        <div id="sticker-control" class="sticker-control-row" style="display:none;">
-          <div class="sticker-thumb-box">
-            <img id="sticker-thumb" src="" alt="미리보기">
+          <div class="format-btn-group" style="flex:1;">
+            <button class="format-btn" onclick="execCmd('bold')" title="굵게"><svg viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 11H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg></button>
+            <button class="format-btn" onclick="execCmd('italic')" title="기울임"><svg viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 10H6v3h8v-3h-2.21l3.42-10H18V4z"/></svg></button>
+            <button class="format-btn" onclick="execCmd('underline')" title="밑줄"><svg viewBox="0 0 24 24"><path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/></svg></button>
+            <button class="format-btn" onclick="execCmd('justifyLeft')" title="왼쪽"><svg viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg></button>
+            <button class="format-btn" onclick="execCmd('justifyCenter')" title="가운데"><svg viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 4h18v-2H3v2zm0-8h18v-2H3v2zm4-4h10V5H7zM3 3v2h18V3H3z"/></svg></button>
+            <button class="format-btn" onclick="execCmd('justifyRight')" title="오른쪽"><svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9zM3 3v2h18V3H3z"/></svg></button>
           </div>
-          <input type="range" id="sticker-size-slider" class="sticker-slider" min="30" max="250" value="80" oninput="resizeSelectedSticker(this.value)">
-          <button class="btn-sticker-delete" onclick="deleteSelectedSticker()">삭제</button>
         </div>
       </div>
+
+      <!-- 2. 날짜 -->
+      <div class="section-title">날짜</div>
+      <div class="tool-group">
+        <div class="tool-row">
+          <input type="date" id="start-date" onchange="updateDateRange()">
+          <input type="date" id="end-date" onchange="updateDateRange()">
+        </div>
+      </div>
+
+      <!-- 3. 테마 설정 -->
+      <div class="section-title">테마 설정</div>
+      <div class="tool-group">
+        <div class="tool-row">
+          <input type="color" id="card-bg-picker" value="#b9ca95" onchange="syncCardColorPicker(this.value)" style="width: 40px; height: 28px; padding: 0; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; background:none;">
+          <input type="text" id="card-bg-hex" value="#b9ca95" class="val-input" style="width: 85px !important;" oninput="syncCardColorHex(this.value)">
+          <span style="font-size:0.75rem; color:#6b7280;">배경 테마색</span>
+        </div>
+        <div class="color-presets">
+          <div class="color-preset-circle" style="background-color: #f7b2bd;" onclick="updateCardBgColor('#f7b2bd')" title="핑크"></div>
+          <div class="color-preset-circle" style="background-color: #f08a5d;" onclick="updateCardBgColor('#f08a5d')" title="코랄"></div>
+          <div class="color-preset-circle" style="background-color: #f9d56e;" onclick="updateCardBgColor('#f9d56e')" title="옐로"></div>
+          <div class="color-preset-circle" style="background-color: #b9ca95;" onclick="updateCardBgColor('#b9ca95')" title="그린"></div>
+          <div class="color-preset-circle" style="background-color: #6497b1;" onclick="updateCardBgColor('#6497b1')" title="블루"></div>
+          <div class="color-preset-circle" style="background-color: #9370db;" onclick="updateCardBgColor('#9370db')" title="퍼플"></div>
+        </div>
+      </div>
+
+      <!-- 4. 배경 무늬 -->
+      <div class="section-title">배경 무늬</div>
+      <div class="tool-group" style="gap: 6px;">
+        <select id="pattern-select" onchange="updatePatternStyle()">
+          <option value="none">단색 (패턴 없음)</option>
+          <option value="dots">땡땡이 무늬 (Dot)</option>
+          <option value="grid">모눈종이 (Grid)</option>
+        </select>
+        <div class="tool-row">
+          <input type="color" id="pattern-color-picker" value="#ffffff" onchange="syncPatternColor(this.value)" style="width: 36px; height: 26px; padding:0; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; background:none;">
+          <input type="text" id="pattern-color-hex" value="#ffffff" class="val-input" style="width: 75px !important;" oninput="syncPatternHex(this.value)">
+        </div>
+        <div class="tool-row">
+          <input type="range" id="pattern-size-slider" min="10" max="50" value="20" oninput="syncPatternSize(this.value)" style="flex:1;">
+          <input type="text" id="pattern-size-val" value="20" class="val-input" oninput="syncPatternSizeInput(this.value)">
+        </div>
+      </div>
+
+      <!-- 5. 요소 -->
+      <div class="section-title">요소</div>
+      <div class="tool-group" style="gap: 6px;">
+        <div class="element-grid">
+          <label for="free-photo-input" class="btn-action">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg> 사진
+          </label>
+          <input type="file" id="free-photo-input" accept="image/*" style="display:none;" onchange="addFreePhoto(event)">
+          
+          <label for="polaroid-photo-input" class="btn-action">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/></svg> 폴라로이드
+          </label>
+          <input type="file" id="polaroid-photo-input" accept="image/*" style="display:none;" onchange="addPolaroidPhoto(event)">
+
+          <label for="sticker-file-input" class="btn-action">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg> 스티커
+          </label>
+          <input type="file" id="sticker-file-input" accept="image/*" style="display:none;" onchange="handleStickerUpload(event)">
+
+          <button class="btn-action" onclick="addTodoItem()">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg> 투두
+          </button>
+        </div>
+
+        <div class="format-btn-group" style="margin-top: 4px;">
+          <button class="format-btn" id="btn-draw-toggle" onclick="toggleDrawingMode()" style="gap:4px;"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> 낙서 모드</button>
+          <button class="format-btn" onclick="clearCanvas()" title="전체 지우기"><svg viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg></button>
+        </div>
+        <div class="tool-row">
+          <select id="pen-type" onchange="changePenSettings()">
+            <option value="pen">일반펜</option>
+            <option value="highlighter">형광펜</option>
+            <option value="crayon">색연필</option>
+            <option value="eraser">지우개</option>
+          </select>
+          <input type="color" id="pen-color" value="#333333" onchange="syncPenColor(this.value)" style="width: 36px; height: 28px; padding: 0;">
+          <input type="text" id="pen-color-hex" value="#333333" class="val-input" style="width: 75px !important;" oninput="syncPenHex(this.value)">
+        </div>
+        <div class="tool-row">
+          <span style="font-size:0.75rem; color:#6b7280; width:30px;">굵기</span>
+          <input type="range" id="pen-width" min="1" max="25" value="3" oninput="syncPenWidth(this.value)" style="flex:1;">
+          <input type="text" id="pen-width-val" value="3" class="val-input" oninput="syncPenWidthInput(this.value)">
+        </div>
+
+        <div id="element-control" class="sticker-control-row" style="display:none;">
+          <div class="sticker-thumb-box">
+            <img id="element-thumb" src="" alt="미리보기">
+          </div>
+          <input type="range" id="element-size-slider" class="sticker-slider" min="40" max="350" value="100" oninput="syncElementSize(this.value)" style="flex:1;">
+          <input type="text" id="element-size-val" value="100" class="val-input" oninput="syncElementSizeInput(this.value)">
+          <button class="btn-delete-item" onclick="deleteSelectedElement()">삭제</button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- 2. 중앙: 하루치 일기 카드 배치 영역 -->
+    <!-- 2. 중앙: 일기 카드 배치 영역 -->
     <div class="panel main-diary-panel" id="main-container">
-      <div class="card-top-bar" data-html2canvas-ignore="true">
-        <label>
-          카드 배경색 설정:
-          <input type="color" id="card-bg-picker" value="#b9ca95" onchange="updateCardBgColor(this.value)">
-        </label>
-      </div>
-
       <div class="daily-cards-wrapper">
         <div class="daily-column">
-          <!-- 스티커와 배경색이 포함된 저장용 카드 래퍼 -->
+          <!-- 낙서 캔버스를 카드 감싸는 래퍼의 최상단(z-index: 9999)에 배치하여 사진·폴라로이드·스티커 위로 그림 -->
           <div class="card-export-wrapper" id="card-wrapper-1">
+            <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
             
-            <div class="diary-card">
+            <div class="diary-card" id="diary-card-box">
               <div class="card-header">
                 <span class="card-label-sub">오늘의</span>
                 <span class="card-date-badge" id="date-badge-1">08월 01일 (토)</span>
                 <span class="card-label-sub">한 줄 기록</span>
               </div>
 
-              <!-- 카드 내부 이미지 첨부 박스 -->
-              <div class="card-image-box" id="card-img-box" onclick="document.getElementById('card-image-input').click()">
-                <input type="file" id="card-image-input" accept="image/*" style="display:none;" onchange="handleCardImageUpload(event)">
-                <span class="card-image-placeholder" id="card-img-placeholder">+ 사진 추가 (선택)</span>
-                <img id="card-img-preview" alt="카드 이미지">
-                <button class="card-img-remove-btn" id="card-img-remove-btn" onclick="removeCardImage(event)">✕</button>
+              <!-- 상단 메인 사진 영역 (확대, 좌우, 위아래 조절 지원) -->
+              <div class="card-image-wrapper">
+                <div class="card-image-box" id="card-img-box" onclick="document.getElementById('card-image-input').click()">
+                  <input type="file" id="card-image-input" accept="image/*" style="display:none;" onchange="handleCardImageUpload(event)">
+                  <span class="card-image-placeholder" id="card-img-placeholder">+ 상단 메인 사진 추가 (선택)</span>
+                  
+                  <div class="card-img-container" id="card-img-container">
+                    <img id="card-img-preview" alt="카드 이미지">
+                  </div>
+
+                  <button class="card-img-remove-btn" id="card-img-remove-btn" onclick="removeCardImage(event)">✕</button>
+                </div>
+                <div class="main-img-controls" id="main-img-controls" data-html2canvas-ignore="true">
+                  <div class="control-row">
+                    <span style="width:36px;">확대</span>
+                    <input type="range" id="img-scale" min="1" max="3" step="0.05" value="1" oninput="syncImgScale(this.value)" style="flex:1;">
+                    <input type="text" id="img-scale-val" value="1.0" class="val-input" oninput="syncImgScaleInput(this.value)">
+                  </div>
+                  <div class="control-row">
+                    <span style="width:36px;">좌우</span>
+                    <input type="range" id="img-pos-x" min="-100" max="100" step="1" value="0" oninput="syncImgPosX(this.value)" style="flex:1;">
+                    <input type="text" id="img-pos-x-val" value="0" class="val-input" oninput="syncImgPosXInput(this.value)">
+                  </div>
+                  <div class="control-row">
+                    <span style="width:36px;">위아래</span>
+                    <input type="range" id="img-pos-y" min="-100" max="100" step="1" value="0" oninput="syncImgPosY(this.value)" style="flex:1;">
+                    <input type="text" id="img-pos-y-val" value="0" class="val-input" oninput="syncImgPosYInput(this.value)">
+                  </div>
+                </div>
               </div>
 
               <div class="daily-editor-area" contenteditable="true" placeholder="오늘의 기록을 남겨보세요..."></div>
               
+              <div class="todo-container" id="todo-container">
+                <div class="todo-item">
+                  <input type="checkbox" onchange="toggleTodoCheck(this)">
+                  <span contenteditable="true" oninput="handleTodoInput(this)">오늘 할 일 작성하기</span>
+                </div>
+              </div>
+
               <div class="card-footer">
                 <input type="text" value="" placeholder="한마디">
               </div>
@@ -661,13 +874,16 @@
           </div>
 
           <div class="col-action-bar">
-            <button class="btn-action-small" data-html2canvas-ignore="true" onclick="downloadJPG('card-wrapper-1', 'daily_card')">일기 카드 저장</button>
+            <button class="btn-action-small" data-html2canvas-ignore="true" onclick="downloadJPG('card-wrapper-1', 'daily_card')">
+              <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/></svg>
+              일기 카드 저장
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 3. 우측 상단: 미니 달력 영역 -->
+    <!-- 3. 우측 상단: 클릭 가능한 미니 달력 영역 -->
     <div class="panel mini-calendar-panel">
       <div class="mini-calendar-header" id="mini-cal-title">2026년 8월</div>
       <table class="mini-calendar-table">
@@ -689,25 +905,42 @@
   </div>
 
   <script>
-    let selectedSticker = null;
-    let isImageUploaded = false;
+    let selectedElement = null;
+    let baseCardColor = '#b9ca95';
 
-    // 카드 상단 날짜를 오늘 날짜로 자동 변환하는 함수
-    function updateCardDate() {
+    function initDates() {
       const today = new Date();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const date = String(today.getDate()).padStart(2, '0');
-      const days = ['일', '월', '화', '수', '목', '금', '토'];
-      const dayName = days[today.getDay()];
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
 
-      const formattedDate = `${month}월 ${date}일 (${dayName})`;
-      const badge = document.getElementById('date-badge-1');
-      if (badge) {
-        badge.textContent = formattedDate;
-      }
+      document.getElementById('start-date').value = `${yyyy}-${mm}-${dd}`;
+      updateDateRange();
     }
 
-    // 1. 글 편집 기능
+    function updateDateRange() {
+      const startVal = document.getElementById('start-date').value;
+      const endVal = document.getElementById('end-date').value;
+      const badge = document.getElementById('date-badge-1');
+
+      if (!startVal) return;
+
+      const startDate = new Date(startVal);
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      
+      const startStr = `${String(startDate.getMonth() + 1).padStart(2, '0')}.${String(startDate.getDate()).padStart(2, '0')} (${days[startDate.getDay()]})`;
+
+      if (endVal) {
+        const endDate = new Date(endVal);
+        const endStr = `${String(endDate.getMonth() + 1).padStart(2, '0')}.${String(endDate.getDate()).padStart(2, '0')} (${days[endDate.getDay()]})`;
+        badge.textContent = `${startStr} ~ ${endStr}`;
+      } else {
+        badge.textContent = startStr;
+      }
+
+      generateMiniCalendar();
+    }
+
     function execCmd(command, value = null) {
       document.execCommand(command, false, value);
     }
@@ -725,12 +958,82 @@
       range.surroundContents(span);
     }
 
-    function changeLineHeight(value) {
-      const editors = document.querySelectorAll('.daily-editor-area');
-      editors.forEach(e => e.style.lineHeight = value);
+    function syncCardColorPicker(color) {
+      document.getElementById('card-bg-hex').value = color;
+      updateCardBgColor(color);
     }
 
-    // 2. 카드 내부 이미지 첨부 / 삭제
+    function syncCardColorHex(hex) {
+      if (/^#[0-9A-F]{6}$/i.test(hex)) {
+        document.getElementById('card-bg-picker').value = hex;
+        updateCardBgColor(hex);
+      }
+    }
+
+    function updateCardBgColor(color) {
+      baseCardColor = color;
+      document.getElementById('card-bg-picker').value = color;
+      document.getElementById('card-bg-hex').value = color;
+      document.getElementById('card-wrapper-1').style.backgroundColor = color;
+
+      document.documentElement.style.setProperty('--theme-color', color);
+      document.documentElement.style.setProperty('--theme-light', adjustColorOpacity(color, 0.25));
+
+      updatePatternStyle();
+      generateMiniCalendar();
+    }
+
+    function adjustColorOpacity(hex, opacity) {
+      let c = hex.replace('#','');
+      if(c.length===3) c = c.split('').map(x=>x+x).join('');
+      const num = parseInt(c,16);
+      return `rgba(${num>>16},${(num>>8)&255},${num&255},${opacity})`;
+    }
+
+    function syncPatternColor(color) {
+      document.getElementById('pattern-color-hex').value = color;
+      updatePatternStyle();
+    }
+    function syncPatternHex(hex) {
+      if (/^#[0-9A-F]{6}$/i.test(hex)) {
+        document.getElementById('pattern-color-picker').value = hex;
+        updatePatternStyle();
+      }
+    }
+    function syncPatternSize(val) {
+      document.getElementById('pattern-size-val').value = val;
+      updatePatternStyle();
+    }
+    function syncPatternSizeInput(val) {
+      let num = parseInt(val);
+      if (!isNaN(num)) {
+        if(num < 10) num = 10;
+        if(num > 50) num = 50;
+        document.getElementById('pattern-size-slider').value = num;
+        updatePatternStyle();
+      }
+    }
+
+    function updatePatternStyle() {
+      const pattern = document.getElementById('pattern-select').value;
+      const patternColor = document.getElementById('pattern-color-picker').value;
+      const size = document.getElementById('pattern-size-slider').value;
+      const wrapper = document.getElementById('card-wrapper-1');
+
+      wrapper.style.backgroundColor = baseCardColor;
+      wrapper.style.backgroundImage = 'none';
+
+      if (pattern === 'dots') {
+        wrapper.style.backgroundImage = `radial-gradient(${patternColor} 20%, transparent 21%)`;
+        wrapper.style.backgroundSize = `${size}px ${size}px`;
+      } else if (pattern === 'grid') {
+        wrapper.style.backgroundImage = `linear-gradient(${patternColor} 1px, transparent 1px), linear-gradient(90deg, ${patternColor} 1px, transparent 1px)`;
+        wrapper.style.backgroundSize = `${size}px ${size}px`;
+      }
+    }
+
+    let isMainImageUploaded = false;
+
     function handleCardImageUpload(e) {
       e.stopPropagation();
       const file = e.target.files[0];
@@ -738,109 +1041,195 @@
         const reader = new FileReader();
         reader.onload = function(event) {
           const img = document.getElementById('card-img-preview');
-          const box = document.getElementById('card-img-box');
           img.src = event.target.result;
-          img.style.display = 'block';
+          document.getElementById('card-img-container').style.display = 'flex';
           document.getElementById('card-img-placeholder').style.display = 'none';
           document.getElementById('card-img-remove-btn').style.display = 'flex';
-          box.removeAttribute('data-html2canvas-ignore');
-          isImageUploaded = true;
-          
-          resetImageSliders();
+          document.getElementById('main-img-controls').style.display = 'flex';
+          isMainImageUploaded = true;
+          resetMainImageTransform();
         }
         reader.readAsDataURL(file);
       }
     }
 
-    function removeCardImage(e) {
-      if (e) e.stopPropagation();
-      const img = document.getElementById('card-img-preview');
-      img.src = '';
-      img.style.display = 'none';
-      document.getElementById('card-img-placeholder').style.display = 'inline';
-      document.getElementById('card-img-remove-btn').style.display = 'none';
-      document.getElementById('card-image-input').value = '';
-      isImageUploaded = false;
-      resetImageSliders();
+    function syncImgScale(val) {
+      document.getElementById('img-scale-val').value = parseFloat(val).toFixed(2);
+      updateMainImageTransform();
+    }
+    function syncImgScaleInput(val) {
+      let num = parseFloat(val);
+      if (!isNaN(num)) {
+        if(num < 1) num = 1;
+        if(num > 3) num = 3;
+        document.getElementById('img-scale').value = num;
+        updateMainImageTransform();
+      }
+    }
+    function syncImgPosX(val) {
+      document.getElementById('img-pos-x-val').value = val;
+      updateMainImageTransform();
+    }
+    function syncImgPosXInput(val) {
+      let num = parseInt(val);
+      if (!isNaN(num)) {
+        if(num < -100) num = -100;
+        if(num > 100) num = 100;
+        document.getElementById('img-pos-x').value = num;
+        updateMainImageTransform();
+      }
+    }
+    function syncImgPosY(val) {
+      document.getElementById('img-pos-y-val').value = val;
+      updateMainImageTransform();
+    }
+    function syncImgPosYInput(val) {
+      let num = parseInt(val);
+      if (!isNaN(num)) {
+        if(num < -100) num = -100;
+        if(num > 100) num = 100;
+        document.getElementById('img-pos-y').value = num;
+        updateMainImageTransform();
+      }
     }
 
-    // 3. 카드 사진 확대 및 위치 조절 기능
-    function updateImageTransform() {
+    function updateMainImageTransform() {
       const scale = document.getElementById('img-scale').value;
       const posX = document.getElementById('img-pos-x').value;
       const posY = document.getElementById('img-pos-y').value;
-
       const img = document.getElementById('card-img-preview');
       if (img) {
         img.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
       }
     }
 
-    function resetImageSliders() {
+    function resetMainImageTransform() {
       document.getElementById('img-scale').value = 1;
+      document.getElementById('img-scale-val').value = '1.0';
       document.getElementById('img-pos-x').value = 0;
+      document.getElementById('img-pos-x-val').value = '0';
       document.getElementById('img-pos-y').value = 0;
-      updateImageTransform();
+      document.getElementById('img-pos-y-val').value = '0';
+      updateMainImageTransform();
     }
 
-    // 4. 스티커 기능
+    function removeCardImage(e) {
+      if (e) e.stopPropagation();
+      const img = document.getElementById('card-img-preview');
+      img.src = '';
+      document.getElementById('card-img-container').style.display = 'none';
+      document.getElementById('card-img-placeholder').style.display = 'inline';
+      document.getElementById('card-img-remove-btn').style.display = 'none';
+      document.getElementById('main-img-controls').style.display = 'none';
+      document.getElementById('card-image-input').value = '';
+      resetMainImageTransform();
+      isMainImageUploaded = false;
+    }
+
+    function createDraggableWrapper(innerElement, initialWidth = 100) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'draggable-element';
+      wrapper.style.left = '40px';
+      wrapper.style.top = '40px';
+      wrapper.style.width = initialWidth + 'px';
+
+      wrapper.appendChild(innerElement);
+      document.getElementById('card-wrapper-1').appendChild(wrapper);
+
+      makeElementInteractive(wrapper);
+      selectElement(wrapper);
+    }
+
+    function addFreePhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        createDraggableWrapper(img, 140);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+
+    function addPolaroidPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const frame = document.createElement('div');
+        frame.className = 'polaroid-frame';
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        frame.appendChild(img);
+
+        createDraggableWrapper(frame, 130);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+
     function handleStickerUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(event) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'draggable-sticker';
-        wrapper.style.left = '30px';
-        wrapper.style.top = '30px';
-        wrapper.style.width = '80px';
-
         const img = document.createElement('img');
         img.src = event.target.result;
-
-        wrapper.appendChild(img);
-        document.getElementById('card-wrapper-1').appendChild(wrapper);
-
-        makeStickerInteractive(wrapper);
-        selectSticker(wrapper);
+        createDraggableWrapper(img, 80);
       };
       reader.readAsDataURL(file);
+      e.target.value = '';
     }
 
-    function selectSticker(el) {
-      document.querySelectorAll('.draggable-sticker').forEach(s => s.classList.remove('selected'));
-      selectedSticker = el;
+    function selectElement(el) {
+      document.querySelectorAll('.draggable-element').forEach(s => s.classList.remove('selected'));
+      selectedElement = el;
       if (el) {
         el.classList.add('selected');
-        const imgSrc = el.querySelector('img').src;
-        document.getElementById('sticker-thumb').src = imgSrc;
-        document.getElementById('sticker-control').style.display = 'flex';
-        document.getElementById('sticker-size-slider').value = parseInt(el.style.width) || 80;
+        const img = el.querySelector('img');
+        if (img) document.getElementById('element-thumb').src = img.src;
+        document.getElementById('element-control').style.display = 'flex';
+        const curWidth = parseInt(el.style.width) || 100;
+        document.getElementById('element-size-slider').value = curWidth;
+        document.getElementById('element-size-val').value = curWidth;
       } else {
-        document.getElementById('sticker-control').style.display = 'none';
+        document.getElementById('element-control').style.display = 'none';
       }
     }
 
-    function resizeSelectedSticker(size) {
-      if (selectedSticker) {
-        selectedSticker.style.width = size + 'px';
+    function syncElementSize(size) {
+      document.getElementById('element-size-val').value = size;
+      if (selectedElement) {
+        selectedElement.style.width = size + 'px';
+      }
+    }
+    function syncElementSizeInput(val) {
+      let num = parseInt(val);
+      if (!isNaN(num)) {
+        if(num < 40) num = 40;
+        if(num > 350) num = 350;
+        document.getElementById('element-size-slider').value = num;
+        if (selectedElement) {
+          selectedElement.style.width = num + 'px';
+        }
       }
     }
 
-    function deleteSelectedSticker() {
-      if (selectedSticker) {
-        selectedSticker.remove();
-        selectSticker(null);
+    function deleteSelectedElement() {
+      if (selectedElement) {
+        selectedElement.remove();
+        selectElement(null);
       }
     }
 
-    function makeStickerInteractive(elmnt) {
+    function makeElementInteractive(elmnt) {
       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
       elmnt.onmousedown = function(e) {
         e.preventDefault();
-        selectSticker(elmnt);
+        selectElement(elmnt);
 
         pos3 = e.clientX;
         pos4 = e.clientY;
@@ -864,16 +1253,161 @@
     }
 
     document.addEventListener('mousedown', function(e) {
-      if (!e.target.closest('.draggable-sticker') && !e.target.closest('.sticker-section')) {
-        selectSticker(null);
+      if (!e.target.closest('.draggable-element') && !e.target.closest('.editor-tools')) {
+        selectElement(null);
       }
     });
 
-    // 5. 미니 달력 생성
+    function addTodoItem() {
+      const container = document.getElementById('todo-container');
+      const item = document.createElement('div');
+      item.className = 'todo-item';
+      item.innerHTML = `
+        <input type="checkbox" onchange="toggleTodoCheck(this)">
+        <span contenteditable="true" oninput="handleTodoInput(this)">새 할 일 항목</span>
+      `;
+      container.appendChild(item);
+    }
+
+    function toggleTodoCheck(checkbox) {
+      const parent = checkbox.closest('.todo-item');
+      if (checkbox.checked) {
+        parent.classList.add('checked');
+      } else {
+        parent.classList.remove('checked');
+      }
+    }
+
+    // [핵심 추가] 투두 내용이 비어있으면(공백 포함) 항목을 자동으로 삭제하는 함수
+    function handleTodoInput(span) {
+      if (span.textContent.trim() === "") {
+        const item = span.closest('.todo-item');
+        if (item) {
+          item.remove();
+        }
+      }
+    }
+
+    const canvas = document.getElementById('drawing-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let isDrawingMode = false;
+
+    function resizeCanvas() {
+      const wrapper = document.getElementById('card-wrapper-1');
+      canvas.width = wrapper.offsetWidth;
+      canvas.height = wrapper.offsetHeight;
+    }
+
+    function toggleDrawingMode() {
+      isDrawingMode = !isDrawingMode;
+      const btn = document.getElementById('btn-draw-toggle');
+      if (isDrawingMode) {
+        canvas.classList.add('active');
+        btn.classList.add('active');
+      } else {
+        canvas.classList.remove('active');
+        btn.classList.remove('active');
+      }
+    }
+
+    function syncPenColor(color) {
+      document.getElementById('pen-color-hex').value = color;
+      changePenSettings();
+    }
+    function syncPenHex(hex) {
+      if (/^#[0-9A-F]{6}$/i.test(hex)) {
+        document.getElementById('pen-color').value = hex;
+        changePenSettings();
+      }
+    }
+    function syncPenWidth(val) {
+      document.getElementById('pen-width-val').value = val;
+      changePenSettings();
+    }
+    function syncPenWidthInput(val) {
+      let num = parseInt(val);
+      if (!isNaN(num)) {
+        if(num < 1) num = 1;
+        if(num > 25) num = 25;
+        document.getElementById('pen-width').value = num;
+        changePenSettings();
+      }
+    }
+
+    function changePenSettings() {
+      const penType = document.getElementById('pen-type').value;
+      const color = document.getElementById('pen-color').value;
+      const width = document.getElementById('pen-width').value;
+
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (penType === 'pen') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 1.0;
+      } else if (penType === 'highlighter') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.35;
+      } else if (penType === 'crayon') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.7;
+      } else if (penType === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (!isDrawingMode) return;
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing || !isDrawingMode) return;
+      const rect = canvas.getBoundingClientRect();
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.stroke();
+    });
+
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function handleCalendarDateClick(year, month, day) {
+      const clickedDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const startInput = document.getElementById('start-date');
+      const endInput = document.getElementById('end-date');
+
+      if (!startInput.value || (startInput.value && endInput.value)) {
+        startInput.value = clickedDateStr;
+        endInput.value = '';
+      } else if (startInput.value && !endInput.value) {
+        if (clickedDateStr < startInput.value) {
+          startInput.value = clickedDateStr;
+        } else {
+          endInput.value = clickedDateStr;
+        }
+      }
+      updateDateRange();
+    }
+
     function generateMiniCalendar() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth();
+      const startVal = document.getElementById('start-date').value;
+      const refDate = startVal ? new Date(startVal) : new Date();
+
+      const year = refDate.getFullYear();
+      const month = refDate.getMonth();
 
       document.getElementById('mini-cal-title').textContent = `${year}년 ${month + 1}월`;
 
@@ -884,17 +1418,43 @@
       miniTbody.innerHTML = '';
       let dateMini = 1;
 
-      for (let i = 0; i < 5; i++) {
+      const endVal = document.getElementById('end-date').value;
+      const startDate = startVal ? new Date(startVal) : null;
+      const endDate = endVal ? new Date(endVal) : null;
+
+      for (let i = 0; i < 6; i++) {
+        if (dateMini > lastDate) break;
         const row = document.createElement('tr');
         for (let j = 0; j < 7; j++) {
           const cell = document.createElement('td');
           if ((i === 0 && j < firstDay) || dateMini > lastDate) {
-            cell.textContent = '';
+            cell.innerHTML = '';
           } else {
-            cell.textContent = dateMini;
-            if (dateMini === today.getDate()) {
+            const currentDay = dateMini;
+            const span = document.createElement('span');
+            span.textContent = currentDay;
+            cell.appendChild(span);
+
+            cell.onclick = () => handleCalendarDateClick(year, month, currentDay);
+
+            const currentCellDate = new Date(year, month, currentDay);
+
+            if (startDate && currentCellDate.toDateString() === startDate.toDateString()) {
               cell.classList.add('today');
+              cell.classList.add('range-start');
             }
+            
+            if (startDate && endDate) {
+              if (currentCellDate >= startDate && currentCellDate <= endDate) {
+                cell.classList.add('in-range');
+              }
+              if (currentCellDate.toDateString() === endDate.toDateString()) {
+                cell.classList.add('range-end');
+              }
+            } else if (startDate && currentCellDate.toDateString() === startDate.toDateString()) {
+              cell.classList.add('range-end');
+            }
+
             dateMini++;
           }
           row.appendChild(cell);
@@ -903,17 +1463,12 @@
       }
     }
 
-    // 6. 카드 배경색 변경
-    function updateCardBgColor(color) {
-      document.getElementById('card-wrapper-1').style.backgroundColor = color;
-    }
-
-    // 7. JPG 다운로드 기능 (카드 저장 전용)
     function downloadJPG(elementId, filenamePrefix) {
-      selectSticker(null);
+      selectElement(null);
+      if (isDrawingMode) toggleDrawingMode();
 
       const imgBox = document.getElementById('card-img-box');
-      if (!isImageUploaded) {
+      if (!isMainImageUploaded) {
         imgBox.setAttribute('data-html2canvas-ignore', 'true');
       }
 
@@ -929,16 +1484,20 @@
         link.download = `${filenamePrefix}_${new Date().toISOString().split('T')[0]}.jpg`;
         link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.click();
-        
-        if (!isImageUploaded) {
+
+        if (!isMainImageUploaded) {
           imgBox.removeAttribute('data-html2canvas-ignore');
         }
       });
     }
 
-    // 초기 실행
-    updateCardDate();
-    generateMiniCalendar();
+    window.onload = function() {
+      initDates();
+      resizeCanvas();
+      changePenSettings();
+      updateCardBgColor('#b9ca95');
+    };
+    window.onresize = resizeCanvas;
   </script>
 </body>
 </html>
